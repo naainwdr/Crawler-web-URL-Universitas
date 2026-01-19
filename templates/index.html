@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mesin Pencari Web Universitas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Mesin Pencari Universitas</div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#" class="nav-link active" data-university="ui" data-url="https://www.ui.ac.id/">Universitas Indonesia</a></li>
+                <li><a href="#" class="nav-link" data-university="itb" data-url="https://www.itb.ac.id/">Institut Teknologi Bandung</a></li>
+                <li><a href="#" class="nav-link" data-university="ugm" data-url="https://ugm.ac.id/">Universitas Gadjah Mada</a></li>
+                <li><a href="#" class="nav-link" data-university="undip" data-url="https://undip.ac.id/">Universitas Diponegoro</a></li>
+            </ul>
+            <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        </div>
+    </nav>
+
+    <!-- Content Area -->
+    <script>
+        mobileMenuBtn.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            
+            // Animate hamburger icon
+            if (navLinks.classList.contains('active')) {
+                mobileMenuBtn.innerHTML = '✕';
+            } else {
+                mobileMenuBtn.innerHTML = '☰';
+            }
+        });
+
+        // Handle nav link clicks
+        navLinkItems.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                navLinkItems.forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Close mobile menu if open
+                if (navLinks.classList.contains('active')) {
+                    navLinks.classList.remove('active');
+                    mobileMenuBtn.innerHTML = '☰';
+                }
+                
+                // Get university info
+                const university = this.getAttribute('data-university');
+                const url = this.getAttribute('data-url');
+                
+                console.log(`Selected: ${university}, URL: ${url}`);
+                
+                // You can add your university switching logic here
+                // For example, you might want to load different content or redirect
+            });
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.navbar')) {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.innerHTML = '☰';
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                navLinks.classList.remove('active');
+                mobileMenuBtn.innerHTML = '☰';
+            }
+        });
+    </script>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- University Header -->
+        <div class="university-header">
+            <h1 id="universityTitle">Universitas Indonesia</h1>
+            <p class="subtitle" id="universitySubtitle">Pencarian informasi di website UI</p>
+        </div>
+
+        <!-- Search Form -->
+        <form class="search-form" id="searchForm">
+            <div class="form-group">
+                <label for="seedUrl">URL Website:</label>
+                <input type="url" id="seedUrl" value="https://www.ui.ac.id/" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="keyword">Kata Kunci Pencarian:</label>
+                <input type="text" id="keyword" placeholder="Masukkan kata kunci yang ingin dicari..." required>
+            </div>
+            
+            <div class="form-group">
+                <label for="searchMethod">Metode Pencarian:</label>
+                <select id="searchMethod">
+                    <option value="depth_limited_bfs">BFS Limited Depth 2</option>
+                    <option value="dfs_limited">DFS Limited Depth 2</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="search-btn" id="searchBtn">Mulai Pencarian</button>
+        </form>
+
+        <!-- Results Section -->
+        <div class="results-section" id="results" style="display: none;">
+            <div class="results-header">
+                <h2 id="searchQuery"></h2>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <div id="resultsList"></div>
+            <div id="noResultsMessage" class="no-results" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // University data
+        const universities = {
+            ui: {
+                name: 'Universitas Indonesia',
+                subtitle: 'Pencarian informasi di website UI',
+                url: 'https://www.ui.ac.id/'
+            },
+            itb: {
+                name: 'Institut Teknologi Bandung',
+                subtitle: 'Pencarian informasi di website ITB',
+                url: 'https://www.itb.ac.id/'
+            },
+            ugm: {
+                name: 'Universitas Gadjah Mada',
+                subtitle: 'Pencarian informasi di website UGM',
+                url: 'https://ugm.ac.id/'
+            },
+            undip: {
+                name: 'Universitas Diponegoro',
+                subtitle: 'Pencarian informasi di website UNDIP',
+                url: 'https://undip.ac.id/'
+            }
+        };
+
+        // DOM elements
+        const navLinks = document.querySelectorAll('.nav-link');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const navLinksContainer = document.getElementById('navLinks');
+        const universityTitle = document.getElementById('universityTitle');
+        const universitySubtitle = document.getElementById('universitySubtitle');
+        const seedUrlInput = document.getElementById('seedUrl');
+        const searchForm = document.getElementById('searchForm');
+        const searchBtn = document.getElementById('searchBtn');
+        const results = document.getElementById('results');
+        const searchQuery = document.getElementById('searchQuery');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultsList = document.getElementById('resultsList');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+
+        // Mobile menu toggle
+        mobileMenuBtn.addEventListener('click', () => {
+            navLinksContainer.classList.toggle('active');
+        });
+
+        // Navigation handling
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                navLinks.forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                link.classList.add('active');
+                
+                // Get university data
+                const universityKey = link.dataset.university;
+                const universityData = universities[universityKey];
+                
+                // Update UI
+                universityTitle.textContent = universityData.name;
+                universitySubtitle.textContent = universityData.subtitle;
+                seedUrlInput.value = universityData.url;
+                
+                // Clear previous results
+                results.style.display = 'none';
+                errorMessage.style.display = 'none';
+                resultsList.innerHTML = '';
+                noResultsMessage.style.display = 'none';
+                
+                // Clear search input
+                document.getElementById('keyword').value = '';
+                
+                // Close mobile menu
+                navLinksContainer.classList.remove('active');
+            });
+        });
+
+        // Search form handling
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const seedUrl = seedUrlInput.value.trim();
+            const keyword = document.getElementById('keyword').value.trim();
+            const searchMethod = document.getElementById('searchMethod').value;
+
+            // Hide previous error messages
+            errorMessage.style.display = 'none';
+
+            // Validation
+            if (!seedUrl) {
+                showError('URL website tidak boleh kosong!');
+                return;
+            }
+            if (!keyword) {
+                showError('Kata kunci tidak boleh kosong!');
+                return;
+            }
+            
+            // Show loading state
+            searchBtn.textContent = 'Mencari...';
+            searchBtn.disabled = true;
+            resultsList.innerHTML = '';
+            noResultsMessage.style.display = 'none';
+            results.style.display = 'block';
+
+            try {
+                const formData = new FormData();
+                formData.append('seed_url', seedUrl);
+                formData.append('keyword', keyword);
+                formData.append('search_method', searchMethod);
+                
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    resultsList.innerHTML = '';
+                    noResultsMessage.style.display = 'none';
+                } else {
+                    displayResults(data.keyword, data.results, data.seed_url);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError('Terjadi kesalahan saat mencari. Mohon coba lagi.');
+            } finally {
+                searchBtn.textContent = 'Mulai Pencarian';
+                searchBtn.disabled = false;
+            }
+        });
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function displayResults(keyword, results, seedUrl) {
+            searchQuery.textContent = `Hasil pencarian "${keyword}" dari: ${getUniversityNameFromUrl(seedUrl)}`;
+            
+            if (results.length > 0) {
+                let html = '';
+                results.forEach(result => {
+                    html += `
+                        <div class="result-item">
+                            <div class="result-title">${result.entry.title || 'No Title'}</div>
+                            <a href="${result.entry.url}" target="_blank" class="result-url">${result.entry.url}</a>
+                            <div class="result-meta">
+                                <span class="result-score">Skor: ${result.score.toFixed(2)}</span>
+                                <a href="/route?url=${encodeURIComponent(result.entry.url)}&seed_url=${encodeURIComponent(seedUrl)}" class="route-link">📍 Lihat Rute</a>
+                            </div>
+                        </div>
+                    `;
+                });
+                resultsList.innerHTML = html;
+                noResultsMessage.style.display = 'none';
+            } else {
+                resultsList.innerHTML = '';
+                noResultsMessage.innerHTML = `
+                    <h3>Tidak ada hasil ditemukan</h3>
+                    <p>Coba gunakan kata kunci yang berbeda atau periksa ejaan Anda.</p>
+                `;
+                noResultsMessage.style.display = 'block';
+            }
+        }
+
+        function getUniversityNameFromUrl(url) {
+            for (const [key, data] of Object.entries(universities)) {
+                if (url.includes(data.url.replace('https://', '').replace('www.', ''))) {
+                    return data.name;
+                }
+            }
+            return url;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set initial focus to search input
+            document.getElementById('keyword').focus();
+        });
+    </script>
+</body>
+</html>

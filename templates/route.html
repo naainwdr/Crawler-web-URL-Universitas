@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rute Link - Mesin Pencari Universitas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">Mesin Pencari Universitas</div>
+            <div class="back-nav">
+                <a href="/" class="back-link">← Kembali ke Beranda</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Rute Navigasi Link</h1>
+            <p class="subtitle">Jalur navigasi dari halaman utama ke halaman tujuan</p><br>
+        </div>
+
+        <!-- Path Container -->
+        <div class="path-container">
+            {% if path and path|length > 0 %}
+                <div class="path-header">
+                    <h2>Jalur Navigasi</h2>
+                    <p class="path-description">Berikut adalah rute navigasi untuk mencapai halaman tujuan:</p>
+                </div>
+                
+                <ol class="path-steps">
+                {% for title, url in path %}
+                    <li>
+                        <div class="step-title">{{ title or 'Halaman Tanpa Judul' }}</div>
+                        <a href="{{ url }}" target="_blank" class="step-url">{{ url }}</a>
+                    </li>
+                {% endfor %}
+                </ol>
+
+                <div class="path-summary">
+                    <h3>Ringkasan Rute</h3>
+                    <p>Rute navigasi ini menunjukkan jalur terpendek dari halaman utama website ke halaman tujuan yang Anda pilih.</p>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span></span>
+                            <span>{{ path|length }} langkah navigasi</span>
+                        </div>
+                        <div class="stat-item">
+                            <span></span>
+                            <span>Tujuan: {{ path[-1][0] if path else 'Tidak diketahui' }}</span>
+                                                    </div>
+                        <div class="stat-item">
+                            <span></span>
+                            <span>Estimasi waktu klik: {{ path|length * 2 }} detik</span>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-path">
+                    <h3>Tidak ada rute yang ditemukan</h3>
+                    <p>Halaman yang dimaksud tidak dapat dijangkau dari halaman utama atau belum dipetakan oleh sistem.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
